@@ -1,0 +1,11 @@
+List existing Reservations:
+  # scontrol show reservation
+
+Create a Reservation:
+  # scontrol create reservation ReservationName=my_reservation StartTime=2023-01-11T10:00:00 EndTime=2023-01-11T11:00:00 Duration=30 user=root nodes=ALL
+
+Delete a Reservation:
+  # scontrol delete reservation ReservationName=my_reservation
+
+Modify a Reservation:
+  # scontrol modify reservation ReservationName=my_reservation user=root,hpcsa1 nodes=slurm.node1,slurm.node2
