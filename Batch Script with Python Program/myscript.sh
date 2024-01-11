@@ -4,4 +4,4 @@
 #SBATCH --error=error-%j.out
 #SBATCH --output=example-%j.out
 
-python3 ./mypython.sh
+python3 ./mypython.py
