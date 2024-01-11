@@ -1,0 +1,11 @@
+**create cluster**
+  # sacctmgr create cluster <cluster-name>
+
+**slurm project"**
+  # sacctmgr add account <account-name>
+
+**check account**
+  # sacctmgr show associations
+
+**create user**
+  # sacctmgr create user name=<user-name> DefaultAccount=<Account>
