@@ -1,0 +1,19 @@
+** SLURM Bank is a collection of wrapper scripts to give simple banking capability to SLURM **
+
+Create SLURM Associations with:
+  # sbank project create -c mycluster -a myproject
+
+Can also delete:
+  # sbank project delete -c mycluster -a myproject
+
+Associate users with the project:
+  # sbank project useradd -c mycluster -a myproject -u someuser
+
+And remove:
+  # sbank project userdel -c mycluster -a myproject -u someuser
+
+Deposit hours to a project:
+  # sbank deposit -c mycluster -a myproject -t 1000
+
+To check your balances:
+  # sbank balance statement -u
