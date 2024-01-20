@@ -1,0 +1,67 @@
+To Start a NODE. 
+ 
+# scontrol update NodeName=slurm.master State=Resume
+
+------ RUN JOB AS BASH SCRIPT
+
+# vi sciptname.sh
+
+	#!/bin/bash
+	#SBATCH --nodes=1
+	#SBATCH --job-name=ExampleJob
+	#SBATCH --error=error-%j.out
+	#SBATCH --output=example-%j.out
+	#SBATCH --time=00:20:00
+
+	echo "Mansi Here"
+
+#sbatch sciptname.s
+
+------ RUN JOB AS SRUN
+
+# srun --nodes=1 --time=00:20:00 --pty /bin/bash
+
+------- RUN JOB AS SALLOC
+
+# salloc -time=00:30:00 --nodes=1 sciptname.sh
+
+---- LAB - SET 1 NODES LIMIT USING QOS
+
+# sacctmgr show qos
+# sacctmgr create qos <qos name>
+# sacctmgr update qos <qos name> set MaxNodes=1
+
+# srun --qos=<qos name> --nodes=2 --time=00:20:00 --pty /bin/bash
+# scontrol show job <job id>
+
+----- CANCLE JOB
+
+# scancel <JOB ID>
+
+---- MAKE Partition LAB - SET 1 NODES LIMIT USING QOS
+
+# vi /opt/slurm-21.08.8/etc/slurm.conf
+# systemctl restart slurmctld
+# srun -p < shruti > --nodes=2 --time=00:20:00 --pty /bin/bash
+# scontrol show job 33
+
+----- MAKE ACCOUNT CREATE USER MAKE LIMITATION
+
+# sacctmgr add account rmalab-99
+# sacctmgr create user name=hpcsa99 DefaultAccount=rmalab-99
+# sacctmgr update user where name=hpcsa99 set GrpNodes=1
+# sacctmgr show association
+
+---- SHOW JOB RUNS
+
+# sacct -S 2024-01-01 -E 2024-01-12
+
+----- SHOW RESERVATION
+
+# scontrol show reservation
+
+# scontrol create reservation ReservationName=my_reservation StartTime=2023-01-11T10:00:00 EndTime=2023-01-11T11:00:00 Duration=30 user=root nodes=ALL
+
+# scontrol delete reservation ReservationName=my_reservation
+
+# scontrol modify reservation ReservationName=my_reservation user=root,hpcsa1 nodes=slurm.node1,slurm.node2
