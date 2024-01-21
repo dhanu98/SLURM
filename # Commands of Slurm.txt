@@ -1,0 +1,194 @@
+# Commands of Slurm
+
+# Change Stat
+
+scontrol update Nodename=compute[1-2] state=DRAIN/IDLE/ALLOC/MIX Reason="[Any reason you want to show]"
+
+scontrol show Partition
+__________________________________________________________________________________________________________________
+# Job Runs
+
+#Type-1
+srun --reservation=root_3 --partition=GTR --nodes=1 --time=00:20:00 -pty /bin/bash
+srun --nodes=1 --time=00:00:10 --pty /bin/bash
+--------------------------------------------
+#Type-2
+vim my_script.sh
+	#!/bin/bash
+	#SBATCH --job-name=job
+	#SBATCH --nodes=2
+	#SBATCH --qos=hpcsa
+	#SBATCH --error=err/job.%j.err
+	#SBATCH --output=out/job.%j.out
+	#SBATCH --time=00:10:00
+	#SBATCH --partition=GTR
+	
+	echo "Job ID: $SLURM_JOB_ID"
+--------------------------------------------
+# Type-3
+salloc --partition=GTR --nodes=1 --ntasks-per-node=1 /bin/bash
+
+
+___________________________________________________________________________________________________________________
+# Show Jobs 
+
+scontrol show jobs [job no.]
+
+squeue 			#it shows Runing and Pending Jobs
+squeue -u/-j/-t/i [--user/--job/--states/--iterate]
+
+------------------------------------------------------
+# Slurm Account (sacct)
+# Displays accounting data for all jobs and job steps in the Slurm job accounting log or Slurm database
+
+sacct -S 2024-01-01 -E 2024-01-12 -o jobId
+sacct --job=50 --endtime
+sacct --job=60 --format=jobid,jobname,partition,account,end
+
+
+___________________________________________________________________________________________________________________
+# Slurm Account Manager (sacctmgr)
+# To Create 'Accociations Cluster' and 'Project/Account' and 'User Account'
+
+#	Slurm Accociations Cluster 
+#		   |
+#		   V
+#	  Slurm Project/Account 
+#		   |
+#		   V
+#	    Slurm User Account
+
+-------------------------------------------------
+# Cluster
+sacctmgr show cluster
+
+sacctmgr -i create cluster[name]
+
+sacctmgr delete cluster [name]
+-------------------------------------------------
+# Account/Project
+sacctmgr -i add account [name]
+
+sacctmgr show account
+
+sacctmgr remove account [name]
+-------------------------------------------------
+# User
+sacctmgr create user name=hpcsa1 DefaultAccount=[Account name]
+
+sacctmgr modify user name=hpcsa1 set MaxWallDurationPerJob=HH:MM:SS Partition=[name] [command entity like example]
+sacctmgr modify user where name=adam cluster=tux account=physics set maxjobs=2 maxwall=30:00
+sacctmge show user
+
+sacctmge delete user name=[user name]
+
+
+__________________________________________________________________________________________________________________
+
+# Reservation
+
+scontrol create reservation starttime=2009-02-06T16:00:00 duration=120 user=root flags=maint,ignore_jobs nodes=ALL
+# scontrol create reservation Starttime=2024-01-16T21:00:00 duration=01:00:00 account=rmalab-acc user=root flags=maint,ignore_jobs node=ALL
+
+scontrol update ReservationName=root_1[resevetion name] duration=150 PartitionName=debug
+scontrol delete reservation=root_1[resevetion name]
+
+sacctmgr show Reservation
+
+___________________________________________________________________________________________________________________
+# Monitoring jobs
+
+sinfo -all/-s/-R/-p 		[all,summary,resions,partition=[name]]
+sstat -j [jobID] --formate=JobID,...
+
+sreport cluster account
+sreport cluster AccountUtilizationByUser start=2024-01-01 end=2024-01-12
+
+sreport user top
+sreport user top start=2024-01-01 end=2024-01-12
+sreport user topuser
+
+sreport job Sizes Cluster=[name]/Account=[name]
+
+sreport --parsable cluster utilization
+
+sreport reservation utilization nodes=compute1
+
+___________________________________________________________________________________________________________________
+# QoS
+
+sacctmgr add qos hpcsa maxnodes=1 flags=DenyOnLimit
+
+PartionName=[name] Nodes=ALL MaxTime=Infinite state=up qos=hpcsa MaxNodes=1
+# or edit in 'slurm.conf' file and restart service 
+
+
+___________________________________________________________________________________________________________________
+# OpenMPI
+# Root user can't use this application, You must login as a user or sudouser
+
+vim mpi.c		# C Language code
+	#include <mpi.h>
+	#include <stdio.h>
+
+	int main(int argc, char** argv)
+	{
+	    // Initialize the MPI environment
+	    MPI_Init(NULL, NULL);
+	
+	    // Get the number of processes
+	    int world_size;
+	    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+	    // Get the rank of the process
+	    int world_rank;
+	    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+	    // Get the name of the processor
+	    char processor_name[MPI_MAX_PROCESSOR_NAME];
+	    int name_len;
+	    MPI_Get_processor_name(processor_name, &name_len);
+
+	    // Print off a hello world message
+	    printf("Hello world from processor %s, rank %d out of %d processors\n",
+	           processor_name, world_rank, world_size);
+
+	    // Finalize the MPI environment.
+	    MPI_Finalize();
+	}
+
+# Cereate envorment file
+vim env-5.0.5.sh
+	#!/bin/bash
+	export PATH="/opt/openmpi-5.0.1/bin:$PATH"
+	export PATH="/opt/openmpi-5.0.1/sbin:$PATH"
+	export LD_LIBRARY_PATH="/opt/openmpi-5.0.1/lib:$LD_LIBRARY_PATH"
+
+source env-5.0.5.sh
+mpicc mpi.c -o mpi			# it will create files mpi [775 file permition]
+ls
+mpirun -np 2 mpi
+
+
+
+
+
+___________________________________________________________________________________________________________________
+
+# Sbank
+
+sbank project create -c cluster -a rmalab-acc
+sbank project useradd -c cluster -a rmalab-acc -u root
+sbank deposite -c cluster -a rmalab-acc -t 1000
+sbank refund job [jobID]
+sbank balance statement
+
+
+
+
+
+
+
+
+
+
